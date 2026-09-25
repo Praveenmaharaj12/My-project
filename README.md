@@ -1,1 +1,283 @@
-# My-project
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FF Tournament Web - Admin & User</title>
+    <style>
+        body { background-color: #121212; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; background-color: #1a1a1a; padding: 15px 50px; box-shadow: 0px 4px 10px rgba(0,0,0,0.5); position: sticky; top: 0; z-index: 100; border-bottom: 2px solid #ff7700; }
+        .nav-brand { font-size: 24px; font-weight: bold; color: #ffaa00; letter-spacing: 2px; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-btn { background: none; border: none; color: #aaa; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; padding: 10px 15px; border-radius: 5px; }
+        .nav-btn.active, .nav-btn:hover { color: #fff; background-color: #ff7700; }
+        .navbar.admin-nav { border-bottom: 2px solid #ff3333; }
+        .navbar.admin-nav .nav-brand { color: #ff3333; }
+        .navbar.admin-nav .nav-btn.active, .navbar.admin-nav .nav-btn:hover { background-color: #ff3333; color: white; }
+        
+        #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background: radial-gradient(circle, #2a2a2a 0%, #121212 100%); }
+        .auth-card { background-color: #1e1e1e; padding: 40px; border-radius: 12px; box-shadow: 0px 0px 30px rgba(255, 119, 0, 0.2); width: 100%; max-width: 400px; border: 1px solid #333; }
+        .auth-card h2 { text-align: center; color: #ffaa00; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; font-size: 24px; }
+        .auth-tabs { display: flex; margin-bottom: 25px; border-bottom: 2px solid #333; }
+        .auth-tab-btn { flex: 1; background: none; border: none; color: #aaa; padding: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .auth-tab-btn.active { color: #ffaa00; border-bottom: 2px solid #ff7700; }
+        .auth-form { display: none; animation: fadeIn 0.4s; }
+        .auth-form.active { display: block; }
+        
+        #main-app, #admin-app { display: none; flex-direction: column; min-height: 100vh; }
+        .content-area { width: 100%; max-width: 1200px; margin: 0 auto; padding: 30px 20px; box-sizing: border-box; }
+        .section { display: none; animation: fadeIn 0.4s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; }
+        .card { background-color: #1e1e1e; padding: 25px; border-radius: 10px; box-shadow: 0px 5px 15px rgba(0,0,0,0.5); border: 1px solid #333; }
+        .center-card { max-width: 500px; margin: 0 auto; }
+        h2 { color: #ffaa00; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; font-size: 22px; border-bottom: 1px solid #333; padding-bottom: 10px;}
+        .admin-h2 { color: #ff3333; }
+        
+        .input-group { margin-bottom: 18px; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #dddddd; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 5px; background-color: #222; color: white; box-sizing: border-box; font-size: 15px; }
+        .input-group input:focus, .input-group select:focus { outline: none; border: 1px solid #ff7700; box-shadow: 0 0 5px #ff7700; }
+        
+        .btn { width: 100%; padding: 14px; background: linear-gradient(90deg, #ff7700, #ffaa00); border: none; border-radius: 5px; color: #000; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; text-align: center; display: inline-block; box-sizing: border-box; }
+        .btn:hover { box-shadow: 0 0 15px #ffaa00; transform: translateY(-2px); }
+        .btn-dark { background: #333; color: white; border: 1px solid #555; }
+        .btn-dark:hover { box-shadow: 0 0 10px #555; background: #444; }
+        .btn-admin { background: linear-gradient(90deg, #ff3333, #ff6666); color: white; }
+        .btn-admin:hover { box-shadow: 0 0 15px #ff3333; }
+        
+        .rules-box { background-color: #2a1111; border: 1px solid #ff3333; padding: 20px; border-radius: 8px; margin-bottom: 30px; font-size: 15px; color: #ddd; }
+        .rules-box h3 { color: #ff5555; margin-top:0; margin-bottom: 15px; font-size: 18px; }
+        .rules-box ul { padding-left: 20px; margin: 0; line-height: 1.6; }
+        
+        .room-details { background-color: #111; border: 1px dashed #ff7700; padding: 15px; border-radius: 8px; margin-top: 25px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; font-size: 16px; }
+        .detail-row:last-child { border-bottom: none; }
+        .hidden-text { color: #fff; font-weight: bold; letter-spacing: 2px; background: #333; padding: 4px 10px; border-radius: 4px; }
+        
+        .wallet-balance { text-align: center; font-size: 40px; font-weight: bold; color: #4CAF50; margin: 20px 0; }
+        .upi-info { text-align: center; font-size: 15px; color: #aaa; margin-top: 20px; padding: 15px; background: #111; border-radius: 5px;}
+        
+        .profile-avatar { width: 100px; height: 100px; background-color: #111; border-radius: 50%; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: center; font-size: 45px; border: 2px solid #ff7700; }
+        .profile-detail { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #333; font-size: 16px; }
+        .profile-detail:last-child { border-bottom: none; }
+        
+        .tournament-info { background-color: #111; padding: 15px; border-left: 4px solid #ffaa00; margin-bottom: 20px; border-radius: 4px; font-size: 15px; line-height: 1.6;}
+        .tournament-info span { color: #ffaa00; font-weight: bold; }
+        .badge-type { background: #ffaa00; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-left: 10px; vertical-align: middle;}
+        
+        .action-buttons { display: flex; gap: 15px; margin-top: 20px; }
+        .action-buttons .btn { flex: 1; }
+        
+        .players-list-box { background-color: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; animation: fadeIn 0.3s; }
+        .players-list-box h4 { margin-top: 0; color: #ffaa00; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+        .players-list-box ul { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+        .players-list-box li { padding: 10px 0; border-bottom: 1px dashed #333; font-size: 15px; color: #ddd; display: flex; justify-content: space-between;}
+        .players-list-box li:last-child { border-bottom: none; }
+        .player-index { color: #777; margin-right: 15px; font-size: 13px;}
+        
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; padding: 15px; gap: 15px; }
+            .nav-links { width: 100%; justify-content: space-between; overflow-x: auto;}
+            .nav-btn { padding: 8px 10px; font-size: 14px; white-space: nowrap;}
+            .action-buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= AUTHENTICATION SCREEN ================= -->
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h2 style="border:none;">FF Tournaments</h2>
+            <p style="text-align:center; color:#aaa; font-size:12px; margin-top:-15px; margin-bottom:20px;">
+                <i>Hint: Login as User or use 'admin' / 'admin' for Admin Panel</i>
+            </p>
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab-btn" onclick="switchAuthTab('register')">Register</button>
+            </div>
+            <form id="login-form" class="auth-form active">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="login-user" placeholder="Enter username or 'admin'" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-pass" placeholder="Enter password" required>
+                </div>
+                <button type="button" class="btn" onclick="loginApp()">Login Now</button>
+            </form>
+            <form id="register-form" class="auth-form">
+                <div class="input-group"><label>In-Game Name (IGN)</label><input type="text" id="reg-ign" placeholder="Jaise: ╰‿╯ＴＯＸＩＣ" required></div>
+                <div class="input-group"><label>Free Fire UID</label><input type="number" id="reg-uid" placeholder="Example: 123456789" required></div>
+                <div class="input-group"><label>Web Username</label><input type="text" id="reg-user" placeholder="Create username" required></div>
+                <div class="input-group"><label>Password</label><input type="password" id="reg-pass" placeholder="Create password" required></div>
+                <button type="button" class="btn" onclick="registerApp()">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= ADMIN APP SCREEN ================= -->
+    <div id="admin-app">
+        <div class="navbar admin-nav">
+            <div class="nav-brand">ADMIN CONTROL</div>
+            <div class="nav-links">
+                <button class="nav-btn active" onclick="switchAdminTab('admin-manage', this)">Manage Matches</button>
+                <button class="nav-btn" onclick="switchAdminTab('admin-create', this)">Create Match</button>
+                <button class="nav-btn" onclick="logoutApp()">Sign Out</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            
+            <!-- MANAGE MATCHES SECTION -->
+            <div id="admin-manage" class="section active">
+                <div class="grid-container" id="admin-matches-grid">
+                    
+                    <div class="card" id="admin-card-1">
+                        <h2 class="admin-h2">Match 1 <span class="badge-type">Battle Royale</span></h2>
+                        <div class="input-group"><label>Set Room ID</label><input type="text" id="admin-room-1" placeholder="Enter Room ID"></div>
+                        <div class="input-group"><label>Set Room Password</label><input type="text" id="admin-pass-1" placeholder="Enter Password"></div>
+                        <button class="btn btn-admin" onclick="updateRoom(1)">Update Room Details</button>
+                        <div class="players-list-box" style="display:block; background:#1e1e1e; border:none; margin-top:30px; padding:0;">
+                            <h4 style="color:#ff3333; border-bottom:1px solid #333;">Players Joined (<span id="admin-count-m1">3</span>)</h4>
+                            <ul id="admin-list-m1">
+                                <li><div><span class="player-index">#1</span> V I P E R</div></li>
+                                <li><div><span class="player-index">#2</span> ❖BAD★BOY❖</div></li>
+                                <li><div><span class="player-index">#3</span> 亗LEGEND亗</div></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card" id="admin-card-2">
+                        <h2 class="admin-h2">Match 2 <span class="badge-type">Clash Squad</span></h2>
+                        <div class="input-group"><label>Set Room ID</label><input type="text" id="admin-room-2" placeholder="Enter Room ID"></div>
+                        <div class="input-group"><label>Set Room Password</label><input type="text" id="admin-pass-2" placeholder="Enter Password"></div>
+                        <button class="btn btn-admin" onclick="updateRoom(2)">Update Room Details</button>
+                        <div class="players-list-box" style="display:block; background:#1e1e1e; border:none; margin-top:30px; padding:0;">
+                            <h4 style="color:#ff3333; border-bottom:1px solid #333;">Players Joined (<span id="admin-count-m2">2</span>)</h4>
+                            <ul id="admin-list-m2">
+                                <li><div><span class="player-index">#1</span> ༄ᶦᶰᵈ᭄Gamer</div></li>
+                                <li><div><span class="player-index">#2</span> ꧁SK•SABIR꧂</div></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CREATE MATCH SECTION -->
+            <div id="admin-create" class="section">
+                <div class="card center-card">
+                    <h2 class="admin-h2" style="border:none; text-align:center;">Create New Tournament</h2>
+                    
+                    <div class="input-group">
+                        <label>Tournament Type</label>
+                        <select id="new-type">
+                            <option value="Battle Royale">Battle Royale (Classic)</option>
+                            <option value="Clash Squad">Clash Squad (CS)</option>
+                            <option value="Lone Wolf">Lone Wolf</option>
+                            <option value="Custom Mode">Custom Mode</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Tournament Name</label>
+                        <input type="text" id="new-name" placeholder="e.g., Sunday Special Showdown" required>
+                    </div>
+                    <div style="display:flex; gap:15px;">
+                        <div class="input-group" style="flex:1;">
+                            <label>Entry Fee (₹)</label>
+                            <input type="number" id="new-fee" placeholder="e.g., 30" required>
+                        </div>
+                        <div class="input-group" style="flex:1;">
+                            <label>Prize Pool (₹)</label>
+                            <input type="number" id="new-prize" placeholder="e.g., 1000" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Match Time</label>
+                        <input type="text" id="new-time" placeholder="e.g., Kal Raat 9:00 PM" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Map / Mode Details</label>
+                        <input type="text" id="new-map" placeholder="e.g., Bermuda (Squad)" required>
+                    </div>
+                    
+                    <button class="btn btn-admin" style="margin-top: 15px;" onclick="createNewTournament()">Publish Tournament</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= MAIN WEB SCREEN (USER) ================= -->
+    <div id="main-app">
+        <div class="navbar">
+            <div class="nav-brand">GAMERZ ZONE</div>
+            <div class="nav-links">
+                <button class="nav-btn active" onclick="switchTab('tournament', this)">Matches</button>
+                <button class="nav-btn" onclick="switchTab('wallet', this)">Wallet</button>
+                <button class="nav-btn" onclick="switchTab('profile', this)">My Profile</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            
+            <!-- TOURNAMENTS SECTION -->
+            <div id="tournament" class="section active">
+                <div class="rules-box">
+                    <h3>⚠️ Rules & Guidelines</h3>
+                    <ul>
+                        <li>Hacks, scripts, panels, or 3rd party applications are strictly prohibited.</li>
+                        <li>Teaming up with enemies will result in an instant ban and disqualification.</li>
+                        <li>Room ID and Password must not be shared with unregistered players.</li>
+                    </ul>
+                </div>
+                
+                <div class="grid-container" id="user-matches-grid">
+                    
+                    <div class="card" id="user-card-1">
+                        <h2>Match 1 <span class="badge-type">Battle Royale</span></h2>
+                        <div class="tournament-info">
+                            <p>💰 <span>Entry Fee:</span> ₹ 10</p><p>🏆 <span>Prize Pool:</span> ₹ 200</p><p>⏰ <span>Time:</span> Dopehar 2:00 PM</p><p>🗺️ <span>Map:</span> Bermuda (Solo)</p>
+                        </div>
+                        <div class="action-buttons">
+                            <button type="button" class="btn" onclick="joinMatch(1, 10)">Join Match</button>
+                            <button type="button" class="btn btn-dark" onclick="togglePlayers(1)">View Players</button>
+                        </div>
+                        <div id="players-match-1" class="players-list-box">
+                            <h4>Registered Players (<span id="count-m1">3</span>/48)</h4>
+                            <ul id="list-m1">
+                                <li><div><span class="player-index">#1</span> V I P E R</div></li>
+                                <li><div><span class="player-index">#2</span> ❖BAD★BOY❖</div></li>
+                                <li><div><span class="player-index">#3</span> 亗LEGEND亗</div></li>
+                            </ul>
+                        </div>
+                        <div class="room-details">
+                            <p style="color: #aaa; font-size: 13px; text-align: center; margin-bottom: 15px;">Credentials will appear here when admin updates it.</p>
+                            <div class="detail-row"><span style="color: #ddd;">Room ID:</span><span class="hidden-text" id="user-room-1">HIDDEN</span></div>
+                            <div class="detail-row"><span style="color: #ddd;">Password:</span><span class="hidden-text" id="user-pass-1">HIDDEN</span></div>
+                        </div>
+                    </div>
+
+                    <div class="card" id="user-card-2">
+                        <h2>Match 2 <span class="badge-type">Clash Squad</span></h2>
+                        <div class="tournament-info">
+                            <p>💰 <span>Entry Fee:</span> ₹ 20</p><p>🏆 <span>Prize Pool:</span> ₹ 500</p><p>⏰ <span>Time:</span> Raat 8:00 PM</p><p>🗺️ <span>Map:</span> Purgatory (Squad)</p>
+                        </div>
+                        <div class="action-buttons">
+                            <button type="button" class="btn" onclick="joinMatch(2, 20)">Join Match</button>
+                            <button type="button" class="btn btn-dark" onclick="togglePlayers(2)">View Players</button>
+                        </div>
+                        <div id="players-match-2" class="players-list-box">
+                            <h4>Registered Players (<span id="count-m2">2</span>/48)</h4>
+                            <ul id="list-m2">
+                                <li><div><span class="player-index">#1</span> ༄ᶦᶰᵈ᭄Gamer</div></li>
+                                <li><div><span class="player-index">#2</span> ꧁SK•SABIR꧂</div></li>
+                            </ul>
+                        </div>
+                        <div class="room-details">
+                            <p style="color: #aaa; font-size: 13px; text-align: center; margin-bottom: 15px;">Credentials will appear here when admin updates it.</p>
+                            <div class="detail-row"><span style="color: #ddd;">Room ID:</span><spa
