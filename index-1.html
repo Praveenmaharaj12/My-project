@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAMERZ ZONE - FF Tournaments</title>
+    <style>
+        body { background-color: #121212; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; background-color: #1a1a1a; padding: 15px 50px; box-shadow: 0px 4px 10px rgba(0,0,0,0.5); position: sticky; top: 0; z-index: 100; border-bottom: 2px solid #ff7700; }
+        .nav-brand { font-size: 24px; font-weight: bold; color: #ffaa00; letter-spacing: 2px; }
+        .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav-btn { background: none; border: none; color: #aaa; font-size: 15px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; padding: 8px 12px; border-radius: 5px; }
+        .nav-btn.active, .nav-btn:hover { color: #fff; background-color: #ff7700; }
+        .navbar.admin-nav { border-bottom: 2px solid #ff3333; }
+        .navbar.admin-nav .nav-brand { color: #ff3333; }
+        .navbar.admin-nav .nav-btn.active, .navbar.admin-nav .nav-btn:hover { background-color: #ff3333; color: white; }
+        
+        #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background: radial-gradient(circle, #2a2a2a 0%, #121212 100%); }
+        .auth-card { background-color: #1e1e1e; padding: 40px; border-radius: 12px; box-shadow: 0px 0px 30px rgba(255, 119, 0, 0.2); width: 100%; max-width: 400px; border: 1px solid #333; }
+        .auth-card h2 { text-align: center; color: #ffaa00; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; font-size: 24px; }
+        .auth-tabs { display: flex; margin-bottom: 25px; border-bottom: 2px solid #333; }
+        .auth-tab-btn { flex: 1; background: none; border: none; color: #aaa; padding: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .auth-tab-btn.active { color: #ffaa00; border-bottom: 2px solid #ff7700; }
+        .auth-form { display: none; animation: fadeIn 0.4s; }
+        .auth-form.active { display: block; }
+        
+        #main-app, #admin-app { display: none; flex-direction: column; min-height: 100vh; }
+        .content-area { width: 100%; max-width: 1200px; margin: 0 auto; padding: 30px 20px; box-sizing: border-box; }
+        .section { display: none; animation: fadeIn 0.4s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; }
+        .card { background-color: #1e1e1e; padding: 25px; border-radius: 10px; box-shadow: 0px 5px 15px rgba(0,0,0,0.5); border: 1px solid #333; display: flex; flex-direction: column;}
+        .center-card { max-width: 500px; margin: 0 auto; }
+        h2 { color: #ffaa00; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; font-size: 22px; border-bottom: 1px solid #333; padding-bottom: 10px;}
+        .admin-h2 { color: #ff3333; }
+        
+        .input-group { margin-bottom: 18px; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #dddddd; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 5px; background-color: #222; color: white; box-sizing: border-box; font-size: 15px; }
+        .input-group input:focus, .input-group select:focus { outline: none; border: 1px solid #ff7700; box-shadow: 0 0 5px #ff7700; }
+        
+        .btn { width: 100%; padding: 14px; background: linear-gradient(90deg, #ff7700, #ffaa00); border: none; border-radius: 5px; color: #000; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; text-align: center; display: inline-block; box-sizing: border-box; }
+        .btn:hover { box-shadow: 0 0 15px #ffaa00; transform: translateY(-2px); }
+        .btn-dark { background: #333; color: white; border: 1px solid #555; }
+        .btn-dark:hover { box-shadow: 0 0 10px #555; background: #444; }
+        .btn-admin { background: linear-gradient(90deg, #ff3333, #ff6666); color: white; }
+        .btn-admin:hover { box-shadow: 0 0 15px #ff3333; }
+        .btn-disabled { background: #444; color: #888; cursor: not-allowed; box-shadow: none; }
+        .btn-disabled:hover { box-shadow: none; transform: none; }
+
+        .btn-upi { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; color: white;}
+        .btn-gpay { background: #1a73e8; } .btn-gpay:hover { box-shadow: 0 0 10px #1a73e8; }
+        .btn-phonepe { background: #5f259f; } .btn-phonepe:hover { box-shadow: 0 0 10px #5f259f; }
+        .btn-paytm { background: #00baf2; color: #002970; } .btn-paytm:hover { box-shadow: 0 0 10px #00baf2; }
+        
+        .rules-box { background-color: #2a1111; border: 1px solid #ff3333; padding: 20px; border-radius: 8px; margin-bottom: 30px; font-size: 15px; color: #ddd; }
+        .rules-box h3 { color: #ff5555; margin-top:0; margin-bottom: 15px; font-size: 18px; }
+        .rules-box ul { padding-left: 20px; margin: 0; line-height: 1.6; }
+        
+        .room-details { background-color: #111; border: 1px dashed #ff7700; padding: 15px; border-radius: 8px; margin-top: 25px; flex-grow: 1; display:flex; flex-direction:column; justify-content:flex-end;}
+        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; font-size: 16px; }
+        .detail-row:last-child { border-bottom: none; }
+        .hidden-text { color: #ffaa00; font-weight: bold; letter-spacing: 2px; background: #222; padding: 4px 10px; border-radius: 4px; }
+        
+        .wallet-container { display: flex; gap: 15px; margin-bottom: 25px; }
+        .wallet-box { flex: 1; background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333; text-align: center; }
+        .wallet-box h4 { margin: 0; color: #aaa; font-size: 14px; text-transform: uppercase; }
+        .wallet-box .amt { font-size: 30px; font-weight: bold; color: #4CAF50; margin: 10px 0 0 0; }
+        .wallet-box.bonus .amt { color: #ffaa00; }
+        .coin-icon { color: #ffd700; }
+        
+        .profile-avatar { width: 100px; height: 100px; background-color: #111; border-radius: 50%; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: center; font-size: 45px; border: 2px solid #ff7700; }
+        .profile-detail { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #333; font-size: 16px; }
+        .profile-detail:last-child { border-bottom: none; }
+        
+        .tournament-info { background-color: #111; padding: 15px; border-left: 4px solid #ffaa00; margin-bottom: 20px; border-radius: 4px; font-size: 15px; line-height: 1.6;}
+        .tournament-info span { color: #ffaa00; font-weight: bold; }
+        .badge-type { background: #ffaa00; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-left: 10px; vertical-align: middle;}
+        
+        .action-buttons { display: flex; gap: 15px; margin-top: 20px; }
+        .action-buttons .btn { flex: 1; }
+        
+        .players-list-box { background-color: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; animation: fadeIn 0.3s; }
+        .players-list-box h4 { margin-top: 0; color: #ffaa00; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+        .players-list-box ul { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+        .players-list-box li { padding: 10px 0; border-bottom: 1px dashed #333; font-size: 15px; color: #ddd; display: flex; justify-content: space-between;}
+        .players-list-box li:last-child { border-bottom: none; }
+        .player-index { color: #777; margin-right: 15px; font-size: 13px;}
+        
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; padding: 15px; gap: 15px; }
+            .nav-links { width: 100%; justify-content: space-between; overflow-x: auto;}
+            .nav-btn { padding: 8px 10px; font-size: 13px; white-space: nowrap;}
+            .action-buttons { flex-direction: column; }
+            .wallet-container { flex-direction: column; }
+        }
+    
+        /* Custom UI Improvements */
+        .card { transition: all 0.3s ease; }
+        .card:hover { box-shadow: 0px 8px 25px rgba(255, 119, 0, 0.25); transform: translateY(-3px); border-color: #ff7700; }
+        
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: #222; color: #fff; padding: 15px 20px; border-left: 5px solid #4CAF50; border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 14px; animation: slideIn 0.3s forwards; min-width: 250px; }
+        .toast.error { border-left-color: #ff3333; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+        
+        .empty-state { text-align: center; padding: 40px 20px; background: #111; border-radius: 10px; border: 1px dashed #555; color: #888; grid-column: 1 / -1; }
+    </style>
+</head>
+<body>
+
+    <!-- ================= AUTHENTICATION SCREEN ================= -->
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h2 style="border:none;">GAMERZ ZONE</h2>
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab-btn" onclick="switchAuthTab('register')">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form active">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="login-user" placeholder="Apna registered username dalein" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-pass" placeholder="Apna password dalein" required>
+                </div>
+                <button type="button" class="btn" onclick="loginApp()">Login to App</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form">
+                <div class="input-group">
+                    <label>In-Game Name (IGN)</label>
+                    <input type="text" id="reg-ign" placeholder="Jaise: ╰‿╯ＴＯＸＩＣ" required>
+                </div>
+                <div class="input-group">
+                    <label>Free Fire UID</label>
+                    <input type="number" id="reg-uid" placeholder="Example: 123456789" required>
+                </div>
+                <div class="input-group">
+                    <label>Web Username</label>
+                    <input type="text" id="reg-user" placeholder="Ek naya username chunein" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="reg-pass" placeholder="Ek mazboot password banayein" required>
+                </div>
+                <button type="button" class="btn" onclick="registerApp()">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= ADMIN APP SCREEN ================= -->
+    <div id="admin-app">
+        <div class="navbar admin-nav">
+            <div class="nav-brand">ADMIN CONTROL</div>
+            <div class="nav-links">
+                <button class="nav-btn active" onclick="switchAdminTab('admin-manage', this)">Manage Matches</button>
+                <button class="nav-btn" onclick="switchAdminTab('admin-create', this)">Create Match</button>
+                <button class="nav-btn" onclick="switchAdminTab('admin-wallet', this)">Admin Wallet</button>
+                <button class="nav-btn" onclick="switchAdminTab('admin-prize', this)">Distribute Prize</button>
+                <button class="nav-btn" onclick="switchAdminTab('admin-settings', this)">Settings</button>
+                <button class="nav-btn" onclick="logoutApp()">Sign Out</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            
+            <!-- MANAGE MATCHES SECTION -->
+            <div id="admin-manage" class="section active">
+                <div class="grid-container" id="admin-matches-grid">
+                    <!-- Admin matches will be injected here -->
+                </div>
+            </div>
+
+            <!-- CREATE MATCH SECTION -->
+            <div id="admin-create" class="section">
+                <div class="card center-card">
+                    <h2 class="admin-h2" style="border:none; text-align:center;">Create New Tournament</h2>
+                    
+                    <div class="input-group">
+                        <label>Tournament Type</label>
+                        <select id="new-type">
+                            <option value="Battle Royale">Battle Royale (Classic)</option>
+                            <option value="Clash Squad">Clash Squad (CS)</option>
+                            <option value="Lone Wolf">Lone Wolf</option>
+                            <option value="Custom Mode">Custom Mode</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Tournament Name</label>
+                        <input type="text" id="new-name" placeholder="e.g., Sunday Special Showdown" required>
+                    </div>
+                    <div style="display:flex; gap:15px;">
+                        <div class="input-group" style="flex:1;">
+                            <label>Entry Fee (<span class="coin-icon">🪙</span>)</label>
+                            <input type="number" id="new-fee" placeholder="e.g., 30" required>
+                        </div>
+                        <div class="input-group" style="flex:1;">
+                            <label>Prize Pool (<span class="coin-icon">🪙</span>)</label>
+                            <input type="number" id="new-prize" placeholder="e.g., 1000" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Match Time</label>
+                        <input type="text" id="new-time" placeholder="e.g., Kal Raat 9:00 PM" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Map / Mode Details</label>
+                        <input type="text" id="new-map" placeholder="e.g., Bermuda (Squad)" required>
+                    </div>
+                    
+                    <button class="btn btn-admin" style="margin-top: 15px;" onclick="createNewTournament()">Publish Tournament</button>
+                </div>
+            </div>
+
+            <!-- ADMIN WALLET SECTION -->
+            <div id="admin-wallet" class="section">
+                <div class="card center-card" style="max-width: 600px;">
+                    <h2 class="admin-h2" style="border:none; text-align:center;">Admin Coin Wallet</h2>
+                    <div class="wallet-container">
+                        <div class="wallet-box" style="border-color: #ff3333; box-shadow: 0 0 10px rgba(255, 51, 51, 0.1);">
+                            <h4 style="color:#ff3333;">Total Admin Funds</h4>
+                            <div class="amt" id="admin-wallet-display" style="color: #ff3333;">₹ 0</div>
+                            <p style="font-size:11px; color:#888;">Available Real Money (INR)</p>
+                        </div>
+                    </div>
+                    <p style="text-align: center; color: #aaa; font-size: 14px; margin-bottom: 20px;">
+                        Is wallet me players ka deposit kiya hua paisa add hota hai. Yahan se aap winners ko prize bhej sakte hain ya apni UPI par withdraw kar sakte hain.
+                    </p>
+                    
+                    <!-- Add Money to Admin Wallet -->
+                    <div style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 25px;">
+                        <h3 style="margin-top: 0; color: #ff3333;">➕ Add Money via UPI Apps</h3>
+                        <p style="font-size: 13px; color: #aaa;">Amount daalein aur UPI app se payment karke UTR verify karein.</p>
+                        <div class="input-group">
+                            <input type="number" id="admin-add-amt" placeholder="Min ₹20 aur Max ₹500" min="20" max="500">
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px;">
+                            <button type="button" class="btn-upi btn-phonepe" style="flex:1;" onclick="openAdminUPIApp('PhonePe')">PhonePe</button>
+                            <button type="button" class="btn-upi btn-gpay" style="flex:1;" onclick="openAdminUPIApp('GPay')">GPay</button>
+                            <button type="button" class="btn-upi btn-paytm" style="flex:1;" onclick="openAdminUPIApp('Paytm')">Paytm</button>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="admin-deposit-utr" placeholder="Enter UTR ID (12 Digits)" required>
+                        </div>
+                        <button class="btn btn-admin" onclick="confirmAdminPaymentSuccess()">Verify UTR & Deposit</button>
+                    </div>
+
+                    <!-- Withdraw from Admin Wallet -->
+                    <div style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
+                        <h3 style="margin-top: 0; color: #ff3333;">💸 Withdraw Admin Wallet Balance</h3>
+                        <div class="input-group">
+                            <label>Apni UPI ID Dalein</label>
+                            <input type="text" id="admin-withdraw-upi" placeholder="e.g., myupi@okicici">
+                        </div>
+                        <div class="input-group">
+                            <label>Withdraw Amount (Coins)</label>
+                            <input type="number" id="admin-withdraw-amt" placeholder="Kitne coins withdraw karne hain?">
+                        </div>
+                        <button class="btn btn-admin" onclick="processAdminWithdraw()">Withdraw to My UPI</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DISTRIBUTE PRIZE SECTION -->
+            <div id="admin-prize" class="section">
+                <div class="card center-card">
+                    <h2 class="admin-h2" style="border:none; text-align:center;">Distribute Winning Prize</h2>
+                    <p style="text-align: center; color: #aaa; font-size: 14px; margin-bottom: 20px;">
+                        Yahan se aap tournament winners ko unke <b>Winning Wallet</b> mein admin wallet se coins bhej sakte hain.
+                    </p>
+                    <div class="input-group">
+                        <label>Player Web Username</label>
+                        <input type="text" id="prize-username" placeholder="Winner ka exact Web Username dalein">
+                    </div>
+                    <div class="input-group">
+                        <label>Prize Amount (Coins)</label>
+                        <input type="number" id="prize-amount" placeholder="Kitne Winning Coins bhejne hain?">
+                    </div>
+                    <button class="btn btn-admin" onclick="sendPrize()">Send Winning Coins</button>
+                </div>
+            </div>
+
+            <!-- ADMIN SETTINGS SECTION -->
+            <div id="admin-settings" class="section">
+                <div class="card center-card">
+                    <h2 class="admin-h2" style="border:none; text-align:center;">Payment Settings</h2>
+                    <p style="text-align: center; color: #aaa; font-size: 14px; margin-bottom: 20px;">
+                        Jo UPI ID yahan daalenge, player ke deposit QR code aur payment me wahi UPI attach hogi.
+                    </p>
+                    <div class="input-group">
+                        <label>Admin UPI ID</label>
+                        <input type="text" id="admin-upi-id" placeholder="e.g., praveen8081@nyes" required>
+                    </div>
+                    <button class="btn btn-admin" onclick="saveAdminUPI()">Update UPI ID</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MAIN WEB SCREEN (USER) ================= -->
+    <div id="main-app">
+        <div class="navbar">
+            <div class="nav-brand">GAMERZ ZONE</div>
+            <div class="nav-links">
+                <button class="nav-btn active" onclick="switchTab('tournament', this)">Matches</button>
+                <button class="nav-btn" onclick="switchTab('wallet', this)">My Wallet</button>
+                <button class="nav-btn" onclick="switchTab('profile', this)">Profile</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            
+            <!-- TOURNAMENTS SECTION -->
+            <div id="tournament" class="section active">
+                <div class="rules-box">
+                    <h3>⚠️ Rules & Guidelines</h3>
+                    <ul>
+                        <li>Hacks, scripts, panels, or 3rd party applications are strictly prohibited.</li>
+                        <li>Teaming up with enemies will result in an instant ban and disqualification.</li>
+                        <li>Room details are only visible to players who have successfully joined.</li>
+                        <li><strong>Note:</strong> Entry fee is deducted from Bonus Coins first.</li>
+                        <li>Tournament khatam hone ke baad winning coins max 24 hours ke andar winners ke winning wallet mein bhej diye jayenge.</li>
+                    </ul>
+                </div>
+                
+                <div class="grid-container" id="user-matches-grid">
+                    <!-- User matches will be injected here -->
+                </div>
+            </div>
+
+            <!-- WALLET SECTION -->
+            <div id="wallet" class="section">
+                <div class="card center-card" style="max-width: 600px;">
+                    <h2 style="border:none; text-align: center; margin-bottom: 5px;">My Digital Wallet</h2>
+                    
+                    <div class="wallet-container">
+                        <div class="wallet-box">
+                            <h4>Winning Coins</h4>
+                            <div class="amt" id="display-winning">0 <span class="coin-icon">🪙</span></div>
+                            <p style="font-size:11px; color:#888;">Can be withdrawn</p>
+                        </div>
+                        <div class="wallet-box bonus">
+                            <h4>Bonus Coins</h4>
+                            <div class="amt" id="display-bonus">0 <span class="coin-icon">🪙</span></div>
+                            <p style="font-size:11px; color:#888;">Usable for Entry Fee only</p>
+                        </div>
+                    </div>
+
+                    <!-- ADD COINS VIA UPI APP & UTR -->
+                    <div style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 25px; text-align: center;">
+                        <h3 style="margin-top: 0; color: #ffaa00;">➕ Add Coins</h3>
+                        <p style="font-size: 13px; color: #aaa;">Amount daalein aur button par click karein jisse aapka PhonePe / GPay app khul jayega. Payment successful hone ke baad wapas aakar <b>UTR daal kar verify karein</b>.</p>
+                        
+                        <div class="input-group" style="text-align: left;">
+                            <label>Enter Deposit Amount (₹ / Coins)</label>
+                            <input type="number" id="add-amount" placeholder="Enter amount (Min 5)" min="5" required>
+                        </div>
+
+                        <!-- PhonePe, GPay, Paytm Payment Redirect Buttons -->
+                        <div style="display: flex; gap: 10px; margin-top: 15px; margin-bottom: 20px;">
+                            <button type="button" class="btn-upi btn-phonepe" style="flex:1;" onclick="openUPIApp('PhonePe')">PhonePe</button>
+                            <button type="button" class="btn-upi btn-gpay" style="flex:1;" onclick="openUPIApp('GPay')">GPay</button>
+                            <button type="button" class="btn-upi btn-paytm" style="flex:1;" onclick="openUPIApp('Paytm')">Paytm</button>
+                        </div>
+
+                        <!-- QR option for alternative payment -->
+                        <div style="background: #222; padding: 15px; border-radius: 8px; border: 1px dashed #ffaa00; margin-bottom: 15px; display: inline-block;">
+                            <p style="font-size:11px; color:#ddd; margin-top:0;">Ya is QR ko kisi dusre phone se scan karein:</p>
+                            <img id="admin-qr-code" src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=upi://pay?pa=praveen8081@nyes&pn=GAMERZ%20ZONE" alt="Admin QR Code" style="border-radius: 4px; display: block; margin: 0 auto 5px auto;">
+                            <span id="display-admin-upi" style="font-size: 13px; color: #ffaa00; font-weight: bold;">UPI: praveen8081@nyes</span>
+                        </div>
+
+                        <!-- UTR Input & Verification Button -->
+                        <div class="input-group" style="text-align: left; margin-bottom: 15px;">
+                            <label>UTR / Transaction Reference ID (12 Digits)</label>
+                            <input type="text" id="deposit-utr" placeholder="Pay karne ke baad UTR ID yahan dalein" required>
+                        </div>
+
+                        <button type="button" class="btn" onclick="confirmPaymentSuccess()">Verify UTR & Add Bonus Coins</button>
+                    </div>
+
+                    <!-- WITHDRAW COINS -->
+                    <div style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
+                        <h3 style="margin-top: 0; color: #ffaa00;">💸 Withdraw Winning</h3>
+                        <p style="font-size: 13px; color: #aaa;">Min Withdraw: 50 Coins (Sirf tournament jeetne par mile Winning balance ko nikal sakte hain).<br><strong style="color:#ffaa00;">Note: Winning amount max 24 hours ke andar aapke account me bhej diya jayega.</strong></p>
+                        
+                        <div class="input-group">
+                            <label>Aapki UPI ID (Withdrawal ke liye)</label>
+                            <input type="text" id="withdraw-details" placeholder="Enter UPI ID (e.g., name@okicici)" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Withdraw Amount (Coins)</label>
+                            <input type="number" id="withdraw-amount" placeholder="Min 50 Coins" min="50" required>
+                        </div>
+                        
+                        <button type="button" class="btn" style="margin-top:5px;" onclick="processWithdraw()">Withdraw Now</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- PROFILE SECTION -->
+            <div id="profile" class="section">
+                <div class="card center-card">
+                    <h2 style="border:none; text-align: center;">Player Dashboard</h2>
+                    <div class="profile-avatar">👤</div>
+                    <div class="profile-detail"><span style="color: #aaa;">Web Username</span><strong id="prof-user">Player_01</strong></div>
+                    <div class="profile-detail"><span style="color: #aaa;">In-Game Name</span><strong id="prof-ign">Not Set</strong></div>
+                    <div class="profile-detail"><span style="color: #aaa;">Linked UID</span><strong id="prof-uid">Not Set</strong></div>
+                    <div class="profile-detail"><span style="color: #aaa;">Total Matches</span><strong id="prof-matches">0</strong></div>
+                    <div class="profile-detail"><span style="color: #aaa;">Winning Balance</span><strong style="color: #4CAF50;"><span id="prof-winning">0</span> 🪙</strong></div>
+                    <div class="profile-detail"><span style="color: #aaa;">Bonus Balance</span><strong style="color: #ffaa00;"><span id="prof-bonus">0</span> 🪙</strong></div>
+                    <button class="btn btn-dark" style="margin-top: 30px; width: 100%;" onclick="logoutApp()">Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= SCRIPTS ================= -->
+    <script>
+        function showToast(msg, isError=false) {
+            let container = document.getElementById('toast-container');
+            if(!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                document.body.appendChild(container);
+            }
+            let toast = document.createElement('div');
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.innerHTML = msg.replace(/\n/g, '<br>');
+            container.appendChild(toast);
+            setTimeout(() => { 
+                toast.style.animation = 'fadeOut 0.3s forwards'; 
+                setTimeout(() => toast.remove(), 300); 
+            }, 3500);
+        }
+        
+        // Override default alert
+        window.alert = function(msg) {
+            let isErr = msg.toLowerCase().includes("galat") || msg.toLowerCase().includes("kripya") || msg.toLowerCase().includes("insufficient") || msg.toLowerCase().includes("nahi");
+            showToast(msg, isErr);
+        };
+
+        const ADMIN_USER = "praveen18";
+        const ADMIN_PASS = "praveen2008@";
+
+        let currentLoggedInUser = null;
+        let currentUserIGN = "Guest";
+        let winningBal = 0;
+        let bonusBal = 0;
+        let matchesPlayed = 0;
+        let adminWalletBal = parseInt(localStorage.getItem('ff_admin_wallet')) || 0;
+
+        let defaultTournaments = [
+            { id: 1, name: "Pro League - Match 1", type: "Battle Royale", fee: 10, prize: 200, time: "Dopehar 2:00 PM", map: "Bermuda (Solo)", room: "HIDDEN", pass: "HIDDEN", players: [] },
+            { id: 2, name: "Elite Clash - Match 2", type: "Clash Squad", fee: 20, prize: 500, time: "Raat 8:00 PM", map: "Purgatory (Squad)", room: "HIDDEN", pass: "HIDDEN", players: [] }
+        ];
+
+        if (!localStorage.getItem('ff_tournaments')) {
+            localStorage.setItem('ff_tournaments', JSON.stringify(defaultTournaments));
+        }
+
+        // --- AUTHENTICATION LOGIC ---
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.querySelectorAll('.auth-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab + '-form').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function registerApp() {
+            let ign = document.getElementById('reg-ign').value;
+            let uid = document.getElementById('reg-uid').value;
+            let user = document.getElementById('reg-user').value;
+            let pass = document.getElementById('reg-pass').value;
+            
+            if(ign && uid && user && pass) {
+                let usersDB = JSON.parse(localStorage.getItem('ff_users')) || {};
+                
+                if(usersDB[user] || user === ADMIN_USER) {
+                    alert("Ye username pehle se kisi ne le rakha hai. Kripya naya username banayein!");
+                    return;
+                }
+
+                usersDB[user] = {
+                    ign: ign, uid: uid, pass: pass, winning: 0, bonus: 0, matches: 0
+                };
+                localStorage.setItem('ff_users', JSON.stringify(usersDB));
+
+                alert("Registration Successful! Aapka account ban gaya hai. Kripya Login karein.");
+                document.getElementById('register-form').reset();
+                switchAuthTab('login');
+            } else { 
+                alert("Kripya sabhi fields bharein!"); 
+            }
+        }
+
+        function loginApp() {
+            let user = document.getElementById('login-user').value;
+            let pass = document.getElementById('login-pass').value;
+            
+            if(!user || !pass) { alert("Username aur Password dono daalna zaroori hai!"); return; }
+
+            // ADMIN LOGIN
+            if(user === ADMIN_USER && pass === ADMIN_PASS) {
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('admin-app').style.display = 'flex';
+                document.getElementById('login-form').reset();
+                
+                let adminUPI = localStorage.getItem('ff_admin_upi') || "praveen8081@nyes";
+                document.getElementById('admin-upi-id').value = adminUPI;
+                updateAdminWalletUI();
+                
+                renderAdminMatches();
+                return;
+            }
+
+            // USER LOGIN
+            let usersDB = JSON.parse(localStorage.getItem('ff_users')) || {};
+
+            if(usersDB[user]) {
+                if(usersDB[user].pass === pass) {
+                    currentLoggedInUser = user;
+                    currentUserIGN = usersDB[user].ign;
+                    winningBal = usersDB[user].winning || 0;
+                    bonusBal = usersDB[user].bonus || 0;
+                    matchesPlayed = usersDB[user].matches || 0;
+
+                    updateUserUI(usersDB[user]);
+
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'flex';
+                    document.getElementById('login-form').reset();
+                    renderUserMatches();
+                } else { alert("Password galat hai! Kripya sahi password dalein."); }
+            } else { alert("Ye Username register nahi hai! Kripya pehle Register karein."); }
+        }
+
+        function logoutApp() {
+            currentLoggedInUser = null;
+            document.getElementById('main-app').style.display = 'none'; 
+            document.getElementById('admin-app').style.display = 'none'; 
+            document.getElementById('auth-screen').style.display = 'flex';
+        }
+
+        function updateUserUI(userData) {
+            document.getElementById('prof-user').innerText = currentLoggedInUser;
+            document.getElementById('prof-ign').innerText = currentUserIGN;
+            document.getElementById('prof-uid').innerText = userData.uid;
+            document.getElementById('prof-matches').innerText = matchesPlayed;
+            document.getElementById('prof-winning').innerText = winningBal;
+            document.getElementById('prof-bonus').innerText = bonusBal;
+
+            document.getElementById('display-winning').innerHTML = `${winningBal} <span class="coin-icon">🪙</span>`;
+            document.getElementById('display-bonus').innerHTML = `${bonusBal} <span class="coin-icon">🪙</span>`;
+
+            // Update QR code and UPI based on admin settings
+            let adminUPI = localStorage.getItem('ff_admin_upi') || "praveen8081@nyes";
+            document.getElementById('admin-qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=upi://pay?pa=${adminUPI}&pn=GAMERZ%20ZONE`;
+            document.getElementById('display-admin-upi').innerText = `UPI: ${adminUPI}`;
+        }
+
+        function updateAdminWalletUI() {
+            adminWalletBal = parseInt(localStorage.getItem('ff_admin_wallet')) || 0;
+            document.getElementById('admin-wallet-display').innerText = `₹ ${adminWalletBal}`;
+        }
+
+        function saveUserData() {
+            if(currentLoggedInUser) {
+                let usersDB = JSON.parse(localStorage.getItem('ff_users')) || {};
+                usersDB[currentLoggedInUser].winning = winningBal;
+                usersDB[currentLoggedInUser].bonus = bonusBal;
+                usersDB[currentLoggedInUser].matches = matchesPlayed;
+                localStorage.setItem('ff_users', JSON.stringify(usersDB));
+                updateUserUI(usersDB[currentLoggedInUser]);
+            }
+        }
+
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('#main-app .section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('#main-app .nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active'); btnElement.classList.add('active');
+            if(tabId === 'wallet') {
+                updateUserUI(JSON.parse(localStorage.getItem('ff_users'))[currentLoggedInUser]);
+            }
+        }
+
+        function switchAdminTab(tabId, btnElement) {
+            document.querySelectorAll('#admin-app .section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.admin-nav .nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active'); btnElement.classList.add('active');
+            if(tabId === 'admin-wallet') {
+                updateAdminWalletUI();
+            }
+        }
+
+        // --- ADMIN SETTINGS & WALLET ---
+        function openAdminUPIApp(appName) {
+            let amount = parseInt(document.getElementById('admin-add-amt').value);
+            if(!amount || amount < 20 || amount > 500) {
+                alert("Kripya kam se kam ₹20 aur zyada se zyada ₹500 add karein!");
+                return;
+            }
+            
+            let adminUPI = localStorage.getItem('ff_admin_upi') || "praveen8081@nyes";
+            let upiLink = `upi://pay?pa=${adminUPI}&pn=GAMERZ%20ZONE%20Admin&am=${amount}&cu=INR`;
+
+            alert(`${appName} open ho raha hai...\n\nPayment successful hone ke baad wapas aakar UTR zaroor daalein!`);
+            window.location.href = upiLink;
+        }
+
+        function confirmAdminPaymentSuccess() {
+            let addAmt = parseInt(document.getElementById('admin-add-amt').value);
+            let utr = document.getElementById('admin-deposit-utr').value;
+
+            if(!addAmt || addAmt < 20 || addAmt > 500) {
+                alert("Kripya sahi amount dalein (Min ₹20 - Max ₹500)!");
+                return;
+            }
+            if(!utr || utr.length < 8) {
+                alert("Kripya valid UTR / Transaction ID daalna zaroori hai!");
+                return;
+            }
+
+            alert("UTR verification chal raha hai... Kripya wait karein.");
+
+            setTimeout(() => {
+                adminWalletBal += addAmt;
+                localStorage.setItem('ff_admin_wallet', adminWalletBal);
+                updateAdminWalletUI();
+                document.getElementById('admin-add-amt').value = '';
+                document.getElementById('admin-deposit-utr').value = '';
+                alert(`Payment Verified Successfully! ✅\n\nUTR: ${utr}\n₹${addAmt} successfully Admin Wallet me jud gaye hain.`);
+            }, 2000);
+        }
+
+        function saveAdminUPI() {
+            let newUPI = document.getElementById('admin-upi-id').value;
+            if(newUPI) {
+                localStorage.setItem('ff_admin_upi', newUPI);
+                alert("Payment ke liye Admin UPI ID update ho gayi hai! Ab player deposit QR par yahi UPI attach rahegi.");
+            } else {
+                alert("Kripya UPI ID bharein.");
+            }
+        }
+
+        function processAdminWithdraw() {
+            let upi = document.getElementById('admin-withdraw-upi').value;
+            let amt = parseInt(document.getElementById('admin-withdraw-amt').value);
+
+            if(!upi) {
+                alert("Kripya apni UPI ID dalein!");
+                return;
+            }
+            if(!amt || amt <= 0) {
+                alert("Kripya valid amount dalein!");
+                return;
+            }
+
+            adminWalletBal = parseInt(localStorage.getItem('ff_admin_wallet')) || 0;
+            if(amt > adminWalletBal) {
+                alert(`Admin Wallet me sufficient balance nahi hai! Aapke paas sirf ${adminWalletBal} coins hain.`);
+                return;
+            }
+
+            alert("Admin withdrawal processing...");
+            setTimeout(() => {
+                adminWalletBal -= amt;
+                localStorage.setItem('ff_admin_wallet', adminWalletBal);
+                updateAdminWalletUI();
+                document.getElementById('admin-withdraw-upi').value = '';
+                document.getElementById('admin-withdraw-amt').value = '';
+                alert(`Withdrawal Success! \u2705\n\n${amt} coins aapke UPI (${upi}) par transfer kar diye gaye hain.`);
+            }, 1500);
+        }
+
+        // --- PLAYER PAYMENT REDIRECT & BONUS VERIFICATION ---
+        function openUPIApp(appName) {
+            let amount = parseInt(document.getElementById('add-amount').value);
+            if(!amount || amount < 5) {
+                alert("Kripya kam se kam 5 Coins (\u20B95) add karein!");
+                return;
+            }
+            
+            let adminUPI = localStorage.getItem('ff_admin_upi') || "praveen8081@nyes";
+            
+            // Standard UPI intent works for redirecting to app choosers (PhonePe, GPay, Paytm) on mobile devices
+            let upiLink = `upi://pay?pa=${adminUPI}&pn=GAMERZ%20ZONE&am=${amount}&cu=INR`;
+
+            alert(`${appName} open ho raha hai...\n\nPayment successful hone ke baad yahan wapas aakar UTR daalna ZAROORI hai, tabhi coins add honge!`);
+            window.location.href = upiLink;
+        }
+
+        function confirmPaymentSuccess() {
+            let amount = parseInt(document.getElementById('add-amount').value);
+            let utr = document.getElementById('deposit-utr').value;
+
+            if(!amount || amount < 5) {
+                alert("Kripya pehle amount dalein!");
+                return;
+            }
+            if(!utr || utr.length < 8) {
+                alert("Kripya valid UTR / Transaction ID daalna zaroori hai!");
+                return;
+            }
+
+            alert(`UTR verification chal raha hai... Kripya wait karein.`);
+
+            // Simulated Payment Verification & Success
+            setTimeout(() => {
+                // Add to player bonus balance
+                bonusBal += amount;
+                
+                // Add real money to Admin Wallet
+                adminWalletBal = (parseInt(localStorage.getItem('ff_admin_wallet')) || 0) + amount;
+                localStorage.setItem('ff_admin_wallet', adminWalletBal);
+
+                saveUserData();
+                
+                document.getElementById('add-amount').value = '';
+                document.getElementById('deposit-utr').value = '';
+                
+                alert(`Payment Verified Successfully! \u2705\n\nUTR: ${utr}\n\n${amount} Real Money Admin ke wallet me chali gayi hai aur ${amount} Bonus Coins aapke account me jud gaye hain!`);
+            }, 2000);
+        }
+
+        function sendPrize() {
+            let targetUser = document.getElementById('prize-username').value;
+            let amount = parseInt(document.getElementById('prize-amount').value);
+
+            if(!targetUser || !amount || amount <= 0) {
+                alert("Kripya sahi username aur amount dalein!");
+                return;
+            }
+
+            adminWalletBal = parseInt(localStorage.getItem('ff_admin_wallet')) || 0;
+            if(amount > adminWalletBal) {
+                alert(`Admin Wallet me sufficient coins nahi hain! Aapke paas sirf ${adminWalletBal} coins hain. Pehle Admin Wallet me funds add karein.`);
+                return;
+            }
+
+            let usersDB = JSON.parse(localStorage.getItem('ff_users')) || {};
+
+            if(usersDB[targetUser]) {
+                adminWalletBal -= amount;
+                localStorage.setItem('ff_admin_wallet', adminWalletBal);
+                updateAdminWalletUI();
+
+                usersDB[targetUser].winning = (usersDB[targetUser].winning || 0) + amount;
+                localStorage.setItem('ff_users', JSON.stringify(usersDB));
+                
+                alert(`Success! ${amount} Winning Coins ${targetUser} ke account me bhej diye gaye hain.\nAdmin wallet se coins deduct ho chuke hain.`);
+                
+                document.getElementById('prize-username').value = '';
+                document.getElementById('prize-amount').value = '';
+            } else {
+                alert("Ye username database mein nahi mila. Kripya correct Web Username dalein.");
+            }
+        }
+
+        // --- DYNAMIC RENDERING ---
+        function renderUserMatches() {
+            let tournaments = JSON.parse(localStorage.getItem('ff_tournaments')) || [];
+            let grid = document.getElementById('user-matches-grid');
+            grid.innerHTML = ""; 
+            
+            if(tournaments.length === 0) {
+                grid.innerHTML = "<div class='empty-state'><h3>Koi Tournament Nahi Hai</h3><p>Admin ne abhi tak koi naya match create nahi kiya hai.</p></div>";
+                return;
+            }
+
+            tournaments.forEach(t => {
+                let isJoined = t.players.includes(currentUserIGN);
+                let roomDisplay = isJoined ? t.room : "HIDDEN";
+                let passDisplay = isJoined ? t.pass : "HIDDEN";
+                let infoText = isJoined ? "Room Details for Joined Players:" : "Credentials will appear here after you join.";
+                let btnHtml = isJoined 
+                    ? `<button type="button" class="btn btn-disabled" disabled>Already Joined</button>`
+                    : `<button type="button" class="btn" onclick="joinMatch(${t.id}, ${t.fee})">Join Match - ${t.fee} \uD83E\uDE99</button>`;
+
+                let playersHtml = t.players.map((p, index) => `<li><div><span class="player-index">#${index+1}</span> ${p === currentUserIGN ? `<span style="color:#4CAF50;">${p} (You)</span>` : p}</div></li>`).join("");
+
+                let cardHTML = `
+                    <div class="card" id="user-card-${t.id}">
+                        <h2>${t.name} <span class="badge-type">${t.type}</span></h2>
+                        <div class="tournament-info">
+                            <p>\uD83D\uDCB0 <span>Entry Fee:</span> ${t.fee} \uD83E\uDE99</p><p>\uD83C\uDFC6 <span>Prize Pool:</span> ${t.prize} \uD83E\uDE99</p><p>\u23F0 <span>Time:</span> ${t.time}</p><p>\uD83D\uDDFA\uFE0F <span>Map:</span> ${t.map}</p>
+                        </div>
+                        <div class="action-buttons">
+                            ${btnHtml}
+                            <button type="button" class="btn btn-dark" onclick="togglePlayers('user-${t.id}')">View Players</button>
+                        </div>
+                        <div id="players-match-user-${t.id}" class="players-list-box">
+                            <h4>Registered Players (<span id="count-m${t.id}">${t.players.length}</span>/48)</h4>
+                            <ul id="list-m${t.id}">${playersHtml}</ul>
+                        </div>
+                        <div class="room-details">
+                            <p style="color: #aaa; font-size: 13px; text-align: center; margin-bottom: 15px;">${infoText}</p>
+                            <div class="detail-row"><span style="color: #ddd;">Room ID:</span><span class="hidden-text" ${isJoined && t.room !== 'HIDDEN' ? 'style="color:#4CAF50;"' : ''}>${roomDisplay}</span></div>
+                            <div class="detail-row"><span style="color: #ddd;">Password:</span><span class="hidden-text" ${isJoined && t.pass !== 'HIDDEN' ? 'style="color:#4CAF50;"' : ''}>${passDisplay}</span></div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHTML;
+            });
+        }
+
+        function renderAdminMatches() {
+            let tournaments = JSON.parse(localStorage.getItem('ff_tournaments')) || [];
+            let grid = document.getElementById('admin-matches-grid');
+            grid.innerHTML = ""; 
+            
+            if(tournaments.length === 0) {
+                grid.innerHTML = "<div class='empty-state'><h3>No Matches</h3><p>Aapne abhi tak koi match create nahi kiya hai.</p></div>";
+                return;
+            }
+
+            tournaments.forEach(t => {
+                let playersHtml = t.players.map((p, index) => `<li><div><span class="player-index">#${index+1}</span> ${p}</div></li>`).join("");
+                
+                let cardHTML = `
+                    <div class="card" id="admin-card-${t.id}">
+                        <h2 class="admin-h2">${t.name} <span class="badge-type">${t.type}</span></h2>
+                        <p style="color:#aaa; font-size:13px;">Current Room: <b style="color:#fff;">${t.room}</b> | Pass: <b style="color:#fff;">${t.pass}</b></p>
+                        <div class="input-group"><label>Set New Room ID</label><input type="text" id="admin-room-${t.id}" placeholder="Enter Room ID"></div>
+                        <div class="input-group"><label>Set New Password</label><input type="text" id="admin-pass-${t.id}" placeholder="Enter Password"></div>
+                        <button class="btn btn-admin" onclick="updateRoom(${t.id})">Update Room Details</button>
+                        <div class="players-list-box" style="display:block; background:#1e1e1e; border:none; margin-top:30px; padding:0;">
+                            <h4 style="color:#ff3333; border-bottom:1px solid #333;">Players Joined (${t.players.length})</h4>
+                            <ul>${playersHtml}</ul>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHTML;
+            });
+        }
+
+        function togglePlayers(matchIdRaw) {
+            let box = document.getElementById('players-match-' + matchIdRaw);
+            if(box.style.display === "none" || box.style.display === "") {
+                box.style.display = "block";
+            } else {
+                box.style.display = "none";
+            }
+        }
+
+        // --- ADMIN FUNCTIONS ---
+        function createNewTournament() {
+            let tType = document.getElementById('new-type').value;
+            let tName = document.getElementById('new-name').value;
+            let tFee = document.getElementById('new-fee').value;
+            let tPrize = document.getElementById('new-prize').value;
+            let tTime = document.getElementById('new-time').value;
+            let tMap = document.getElementById('new-map').value;
+
+            if(!tName || !tFee || !tPrize || !tTime || !tMap) { alert("Kripya saari match details fill karein!"); return; }
+
+            let tournaments = JSON.parse(localStorage.getItem('ff_tournaments')) || [];
+            let newId = tournaments.length > 0 ? tournaments[tournaments.length - 1].id + 1 : 1;
+
+            tournaments.push({
+                id: newId, name: tName, type: tType, fee: parseInt(tFee), prize: parseInt(tPrize), 
+                time: tTime, map: tMap, room: "HIDDEN", pass: "HIDDEN", players: []
+            });
+
+            localStorage.setItem('ff_tournaments', JSON.stringify(tournaments));
+            
+            document.getElementById('new-name').value = ''; document.getElementById('new-fee').value = '';
+            document.getElementById('new-prize').value = ''; document.getElementById('new-time').value = '';
+            document.getElementById('new-map').value = '';
+
+            alert("Naya Tournament Successfully Create Ho Gaya Hai!");
+            renderAdminMatches();
+            switchAdminTab('admin-manage', document.querySelectorAll('.admin-nav .nav-btn')[0]);
+        }
+
+        function updateRoom(matchId) {
+            let roomId = document.getElementById('admin-room-' + matchId).value;
+            let roomPass = document.getElementById('admin-pass-' + matchId).value;
+            
+            if(roomId && roomPass) {
+                let tournaments = JSON.parse(localStorage.getItem('ff_tournaments')) || [];
+                let tIndex = tournaments.findIndex(t => t.id === matchId);
+                if(tIndex !== -1) {
+                    tournaments[tIndex].room = roomId;
+                    tournaments[tIndex].pass = roomPass;
+                    localStorage.setItem('ff_tournaments', JSON.stringify(tournaments));
+                    alert("Match " + matchId + " Room Details Successfully Updated!");
+                    renderAdminMatches();
+                }
+            } else { alert("Kripya Room ID aur Password dono dalein."); }
+        }
+
+        // --- USER FUNCTIONS (WALLET & JOIN) ---
+        function joinMatch(matchId, fee) {
+            let tournaments = JSON.parse(localStorage.getItem('ff_tournaments')) || [];
+            let tIndex = tournaments.findIndex(t => t.id === matchId);
+            
+            if(tIndex === -1) return;
+            if(tournaments[tIndex].players.includes(currentUserIGN)) {
+                alert("Aap pehle hi ye match join kar chuke hain!"); return;
+            }
+
+            let totalBal = winningBal + bonusBal;
+
+            if(totalBal >= fee) {
+                if(bonusBal >= fee) {
+                    bonusBal -= fee;
+                } else {
+                    let remaining = fee - bonusBal;
+                    bonusBal = 0;
+                    winningBal -= remaining;
+                }
+                
+                matchesPlayed++;
+                tournaments[tIndex].players.push(currentUserIGN);
+                localStorage.setItem('ff_tournaments', JSON.stringify(tournaments));
+
+                saveUserData();
+                renderUserMatches();
+                alert(`Success! Aapne Match join kar liya. ${fee} Coins deduct ho gaye.`);
+            } else {
+                alert(`Insufficient Coins! Entry Fee ${fee} \uD83E\uDE99 hai. Kripya Wallet mein coins add karein.`);
+                switchTab('wallet', document.querySelectorAll('#main-app .nav-btn')[1]);
+            }
+        }
+
+        // --- WITHDRAW SYSTEM ---
+
+
+        function processWithdraw() {
+            let method = document.getElementById('withdraw-method').value;
+            let details = document.getElementById('withdraw-details').value;
+            let amount = parseInt(document.getElementById('withdraw-amount').value);
+
+            if(!details) { alert("Kripya payment details dalein!"); return; }
+            if(!amount || amount < 50) { alert("Minimum withdrawal limit 50 Coins hai!"); return; }
+            
+            if(amount > winningBal) {
+                alert(`Aapke paas sufficient Winning Coins nahi hain! Aapke paas sirf ${winningBal} Winning Coins hain.`);
+                return;
+            }
+
+            alert(`Withdrawal process ho raha hai...`);
+
+            setTimeout(() => {
+                winningBal -= amount;
+                saveUserData();
+                
+                document.getElementById('withdraw-details').value = '';
+                document.getElementById('withdraw-amount').value = '';
+                
+                alert(`Withdrawal Request Successful! \u2705\n\n${amount} Coins ki request receive ho gayi hai. Max 24 hours ke andar amount aapke ${method} (${details}) par bhej diya jayega.`);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
